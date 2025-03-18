@@ -225,5 +225,165 @@ pca embedding plot:
 
 <img width="504" alt="ebb82500-28f5-40e8-80df-f7c2d51aca96" src="https://github.com/user-attachments/assets/1c9b3a25-0d08-4020-b28e-ff7f1d5f78d1" />
 
+###  Clustering:
+Now, that we have performed dimensinality reduction, we move on to clustering the visium data. After dimensionality reduction, clustering helps to group similar spatial transcriptomics spots (or cells) based on their gene expression profiles. This is crucial for understanding **tissue heterogeneity, identifying cell types**, and **detecting spatial patterns.**
+```r
+####
+### Clustering ####
+####
+
+# Clustering of the Visium spots
+
+# graph for neighbors
+bc_visium <- getProfileNeighbors(bc_visium, dims = 1:30, k = 10, method = "SNN")
+vrGraphNames(bc_visium)
+
+# clustering
+bc_visium <- getClusters(bc_visium, resolution = 0.5, label = "Clusters", graph = "SNN")
+```
+- **getProfileNeighbors()** builds a graph-based nearest-neighbor structure using the first 30 principal components.
+- **dims = 1:30** uses the first 30 dimensions (from PCA) to calculate similarity.
+- **k = 10** connects each Visium spot to 10 nearest neighbors. 
+- **method = "SNN"** Uses a Shared Nearest Neighbor (SNN) approach to ensure robust clustering and
+- **vrGraphNames(bc_visium)** lists the graph structures created.
+
+### Visualizing the embeddings:
+
+```r
+####
+### Visualization ####
+####
+
+# UMAP embedding Visualization
+vrEmbeddingPlot(bc_visium, embedding = "umap", group.by = "Clusters")
+vrSpatialPlot(bc_visium, group.by = "Clusters", plot.segments = TRUE)
+vrSpatialPlot(bc_visium, group.by = "Clusters", plot.segments = TRUE, alpha = 0.5)
+```
+Output:
+
+<img width="504" alt="4a93a89c-2b34-46fb-acce-c26ba687e410" src="https://github.com/user-attachments/assets/c444eac9-22ba-48df-965c-8cfdea4afbd1" />
+
+### **UMAP Clustering Plot Interpretation**
+
+This **UMAP clustering plot** represents **spatial transcriptomics data**, where each dot corresponds to a Visium spot, and colors indicate different clusters.
+
+## **Key Observations from the UMAP Plot:**
+
+### **1. Distinct Clusters**
+- Different regions of the plot are occupied by different clusters (colored groups).
+- Clusters are spatially separated, indicating clear biological or transcriptional differences.
+
+### **2. Cluster Labels**
+- The **legend on the right** assigns a unique color to each cluster (e.g., Clusters 1 to 13).
+- These clusters were determined based on **graph-based clustering** (such as Louvain or Leiden algorithms).
+
+### **3. UMAP Axes (UMAP_1 & UMAP_2)**
+- These are the **principal components of the reduced-dimensional data**, where similar data points are positioned close together.
+- **Spots that are closer** in this space are expected to have similar gene expression profiles.
+
+## **Why is this Important?**
+- **Cluster Identification:** Helps in **detecting distinct tissue regions** or cell types.
+- **Spatial Context:** If mapped back to spatial coordinates, these clusters may correspond to **specific anatomical regions**.
+- **Downstream Analysis:** Once clusters are identified, we can:
+  - Find **marker genes** that define each cluster.
+  - Perform **differential expression analysis** between clusters.
+  - Link clusters to **biological or disease states**.
+
+```r
+# PCA embedding Visualization
+vrEmbeddingPlot(bc_visium, embedding = "pca", group.by = "Clusters")
+```
+Output:
+
+<img width="504" alt="10d13199-51fa-4fd1-a69f-909ac7dcfe81" src="https://github.com/user-attachments/assets/1d3cc562-bd9e-4ed4-a3e5-1261c019b8d2" />
+
+### 📊 Explanation of the PCA Embedding Plot (`vrEmbeddingPlot`)
+
+This plot represents a **Principal Component Analysis (PCA) embedding** of spatial transcriptomics data, where each point corresponds to a **spot** in the Visium dataset. The spots are colored based on their **cluster assignments**, highlighting groups of similar gene expression profiles.
+
+---
+
+#### 🔍 What Does This Plot Show?
+
+##### **1️⃣ Principal Component Axes (`PCA_1` & `PCA_2`)**
+- **PCA_1 and PCA_2** are the first two principal components that capture the most variance in the dataset.
+- They provide a lower-dimensional representation of the high-dimensional gene expression data.
+- Spots that are **closer together** in this plot have more similar transcriptomic profiles.
+
+##### **2️⃣ Clustering (Color-Coded)**
+- Each point (spot) is assigned a **cluster**, represented by different colors.
+- Clusters indicate groups of spots with similar gene expression patterns.
+- These clusters can correspond to distinct biological regions in the tissue.
+
+##### **3️⃣ Dimensionality Reduction (Why PCA?)**
+- PCA reduces high-dimensional gene expression data to two main components.
+- Unlike UMAP or t-SNE, PCA preserves **global structure** but may not always separate clusters as distinctly.
+
+---
+
+#### 🛠️ **How Is This Useful?**
+- **Identifies major sources of variation** in gene expression data.
+- Helps in **initial clustering analysis** before applying non-linear methods like UMAP.
+- Can be used for **feature selection**, retaining components that explain the most variance.
+
+---
+
+### 🔬 ** Optional steps you can perform**
+- Compare PCA clusters with **UMAP embeddings** to see finer resolution clustering.
+- Perform **differential expression analysis** to identify key marker genes in each cluster.
+- Use **biological annotation** to interpret the meaning of each cluster.
+
+
+
+```r
+vrSpatialPlot(bc_visium, group.by = "Clusters", plot.segments = TRUE)
+vrSpatialPlot(bc_visium, group.by = "Clusters", plot.segments = TRUE, alpha = 0.5)
+```
+Output:
+
+<img width="504" alt="fffdcc1c-9ea8-4f06-8cbd-9a5223a5e1a4" src="https://github.com/user-attachments/assets/ce318b9b-b87a-447f-b2d4-9321c90000f3" />
+
+### 🧬 Explanation of the Spatial Plot (`vrSpatialPlot`)
+
+The image is a **spatial transcriptomics plot**, generated using the `vrSpatialPlot` function. Below is a breakdown of what it represents:
+
+---
+
+#### 🧩 What Does This Plot Show?
+- The **background image** is an **H&E-stained histological tissue section**.
+- The **hexagonal grid** represents **Visium spots**, each capturing **gene expression data** from the tissue.
+- Each **spot is colored** based on its assigned **cluster**, obtained from the clustering step.
+
+---
+
+#### 🛠️ Key Features of the Plot
+
+##### 🎨 Clusters (Color-Coded)
+- Each unique **color represents a distinct cluster**.
+- Clusters correspond to **regions of the tissue** that share **similar gene expression profiles**.
+
+##### 🔷 Hexagonal Grid (Spots)
+- Each **spot contains spatially resolved transcriptomic data**.
+- The **segmentation highlights** how different clusters are **distributed within the tissue**.
+
+##### 🏥 Overlay with Histological Image
+- Helps **correlate spatial gene expression** with **tissue morphology**.
+- Allows **identification of functionally distinct regions** in the sample.
+
+##### ✂️ Plot Segments (`plot.segments = TRUE`)
+- Likely **shows boundaries between clusters** to highlight their **spatial organization**.
+
+---
+
+#### 🔬 Biological Interpretation
+- This **clustering helps identify functionally distinct regions** in the tissue.
+- The overlay with **histology helps determine** whether clusters correspond to **known tissue structures** or **disease states**.
+
+---
+
+
+
+
+
 
 
