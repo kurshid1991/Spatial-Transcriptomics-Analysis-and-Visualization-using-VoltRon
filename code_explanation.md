@@ -124,3 +124,97 @@ vrImages(bc_visium, channel = "H&E", scale.perc = 100)
 Output:
 
 ![visium_H E](https://github.com/user-attachments/assets/bd3fd83f-a5de-4953-b2c9-140375c76352)
+
+```r
+####
+## Omic Profile Clustering ####
+####
+
+####
+### Processing and Filtering ####
+####
+
+# features
+head(vrFeatures(bc_visium))
+length(vrFeatures(bc_visium))
+```
+Output:
+> head(vrFeatures(bc_visium))
+[1] "SAMD11"  "NOC2L"   "KLHL17"  "PLEKHN1" "PERM1"   "HES4"   
+> length(vrFeatures(bc_visium))
+[1] 18085
+
+- vrFeatures(bc_visium)
+
+This function retrieves the list of features (genes) present in the dataset bc_visium. The dataset contains gene expression data from spatial transcriptomics (Visium technology). The function returns a character vector with gene names.
+- head(vrFeatures(bc_visium))
+
+This shows the first 6 gene names from the dataset:
+
+"SAMD11"  "NOC2L"   "KLHL17"  "PLEKHN1" "PERM1"   "HES4"
+
+### normalizeData(bc_visium)
+```r
+# normalize and select the top 3000 highly variable features
+bc_visium <- normalizeData(bc_visium)
+bc_visium <- getFeatures(bc_visium, n = 3000)
+```
+*Purpose:* This function normalizes the gene expression data in bc_visium. Raw gene expression counts are affected by sequencing depth and technical variations, so normalization is necessary to compare gene expression levels across spots or cells.
+
+next, top 3000 most variable genes from the dataset are selected.
+
+```r
+# selected features
+head(vrFeatureData(bc_visium))
+selected_features <- getVariableFeatures(bc_visium)
+head(selected_features, 20)
+```
+Output:
+This function extracts the most variable genes from bc_visium, which are important for downstream analysis like clustering.
+The output lists the top 20 most variable genes in the dataset.
+| Feature   | Mean        | Variance   | Adjusted Variance | Rank  |
+|-----------|------------|------------|-------------------|-------|
+| SAMD11   | 1.15464744 | 3.74606535 | 3.06886024       | 5466  |
+| NOC2L    | 1.71454327 | 6.06215671 | 5.85190243       | 3543  |
+| KLHL17   | 0.37039263 | 0.54140333 | 0.66165246       | 10248 |
+| PLEKHN1  | 0.55068109 | 1.17274648 | 1.04369994       | 8865  |
+| PERM1    | 0.05288462 | 0.05570797 | 0.05640066       | 14623 |
+| HES4     | 1.84475160 | 8.06785864 | 6.68690983       | 3221  |
+
+[1]   "IGKC"      "MT-CO3"    "MT-CO2"    "MT-ND4L"   "MT-ND4"    "MT-ND2"    "MT-CYB"    "COL1A1"    "MT-ND1"    "IGHG1"     "COL3A1"
+
+[12]   "ERBB2"     "IGHA1"     "COL1A2"    "TMSB4X"    "DCAF7"     "VMP1"      "MIEN1"     "MT-ND3"    "ACTB"  
+
+```r
+####
+### Dimensionality Reduction ####
+####
+
+# embedding
+bc_visium <- getPCA(bc_visium, features = selected_features, dims = 30)
+bc_visium <- getUMAP(bc_visium, dims = 1:30)
+vrEmbeddingNames(bc_visium)
+```
+Output:
+
+[1]   "pca"    "umap"
+
+Embedding refers to the process of representing high-dimensional data in a lower-dimensional space while preserving essential biological structures and relationships. This is particularly useful in single-cell and spatial transcriptomics, where thousands of genes are measured for each cell/spot.
+
+Raw gene expression data contains thousands of genes, many of which are correlated or noisy. PCA transforms this data into a lower-dimensional space that preserves meaningful variation. The reduced dimensions help in clustering, visualization, and denoising.
+
+UMAP (Uniform Manifold Approximation and Projection) is a non-linear dimensionality reduction technique used for visualization. dims = 1:30 means we use the first 30 principal components from PCA as input for UMAP.
+
+- PCA provides linear transformations, but UMAP captures more non-linear relationships between genes.
+- UMAP maps high-dimensional clusters into 2D or 3D space for better visualization.
+- This step helps in identifying distinct clusters or patterns in the gene expression data.
+
+### Visualization of embeddings:
+```r
+# embedding visualization
+vrEmbeddingPlot(bc_visium, embedding = "umap")
+```
+Output:
+<img width="504" alt="b4a476b3-d4a3-47b9-a1f2-a3e1f0440930" src="https://github.com/user-attachments/assets/ab9ff205-73c6-4402-a3c2-c3a5b6fe13f5" />
+
+
