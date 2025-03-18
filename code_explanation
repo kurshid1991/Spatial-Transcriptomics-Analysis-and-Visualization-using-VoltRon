@@ -1,3 +1,0 @@
-```r
-options(java.parameters = "-Xmx8g")
-library(VoltRon)
