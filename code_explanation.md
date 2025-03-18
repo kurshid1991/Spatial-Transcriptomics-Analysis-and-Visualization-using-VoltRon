@@ -213,8 +213,17 @@ UMAP (Uniform Manifold Approximation and Projection) is a non-linear dimensional
 ```r
 # embedding visualization
 vrEmbeddingPlot(bc_visium, embedding = "umap")
+vrEmbeddingPlot(bc_visium, embedding = "pca")
 ```
 Output:
+
+Umap embedding plot: 
+
 <img width="504" alt="b4a476b3-d4a3-47b9-a1f2-a3e1f0440930" src="https://github.com/user-attachments/assets/ab9ff205-73c6-4402-a3c2-c3a5b6fe13f5" />
+
+pcs embedding plot:
+
+<img width="504" alt="ebb82500-28f5-40e8-80df-f7c2d51aca96" src="https://github.com/user-attachments/assets/1c9b3a25-0d08-4020-b28e-ff7f1d5f78d1" />
+
 
 
